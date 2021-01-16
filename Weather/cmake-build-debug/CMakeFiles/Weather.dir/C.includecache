@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Projects/CLionProjects/Weather/main.c
+stdio.h
+-
+
+C:/Projects/CLionProjects/Weather/test.c
+stdio.h
+-
+string.h
+-
+
