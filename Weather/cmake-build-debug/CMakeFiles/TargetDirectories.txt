@@ -1,4 +1,0 @@
-C:/Projects/CLionProjects/Weather/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Projects/CLionProjects/Weather/cmake-build-debug/CMakeFiles/main.dir
-C:/Projects/CLionProjects/Weather/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-C:/Projects/CLionProjects/Weather/cmake-build-debug/CMakeFiles/test.dir
