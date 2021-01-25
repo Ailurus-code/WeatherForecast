@@ -11,11 +11,6 @@
 
 FILE *input, *output;
 
-//char *GetRandomSentence()
-//{
-//    return;
-//}
-
 //Функция, проверяющая совпадает ли данная дата с текущей.
 int CheckDate(int day, int month, int year)
 {
@@ -29,11 +24,10 @@ int CheckDate(int day, int month, int year)
     strcpy(date, temp);
     char DateInInput[SIZE] = {0};
     sprintf(DateInInput, "%d%d.%d%d.%d", day / 10, day % 10, month / 10, month % 10, year);
-//    fprintf(output, "%s\n", date);
     if (!(strcmp(DateInInput, date))) return 1;
     else return 0;
 }
-
+//Определяет что нужно вывести вместо числовой даты при генерации прогноза
 char *DateInText(int day, int month, int year)
 {
     char *Date;
@@ -47,9 +41,7 @@ char *DateInText(int day, int month, int year)
         Date = (char*) malloc(sizeof("Доделать"));
         strcpy(Date, "ДОДЕЛАТЬ");
     }
-//    debug
-//    fprintf(output, "%s\n", Date);  //Вот тут работает
-    return Date;                   //А вот тут уже нет! (АААААА помогите)
+    return Date;
 }
 
 char *MakeText(int day, int month, int year)
@@ -58,19 +50,21 @@ char *MakeText(int day, int month, int year)
     strcpy(OutputText, DateInText(day, month, year));
     return OutputText;
 }
-
+//Удаление пробелов после запятых во входных данных
+//Запятые могут встречаться в графах "Направление" и "Явления"
+//Удаление пробелов необходимо чтобы  правильно считать все нужные элементы в одну строку
 char *DeleteSpaceAfterComa(char *FullString)
 {
     for (int i = 0; i < strlen(FullString); i++)
     {
         if (FullString[i] == ',')
         {
-            for (int j = i + 2; FullString[j - 1] = FullString[j]; j++);
+            for (int j = i + 2; FullString[j - 1] = FullString[j]; j++);    //Сдвиг строки на один элемент влево
         }
     }
     return FullString;
 }
-
+//------------------------------------- Генерация прогноза -------------------------------------------------//
 void PrintForecast(int day, int month, int year, int night_lowest_temp, int night_highest_temp, int day_lowest_temp,
                    int day_highest_temp, int lowest_feels_like, int highest_feels_like, int pressure, char Preciptation[],
                    char WindSpeed[], char WindDirection[], char WindGusts[], char Phenomenon[])
@@ -79,16 +73,17 @@ void PrintForecast(int day, int month, int year, int night_lowest_temp, int nigh
 
     fputs(answer, output);
 }
-
+//-----------------------------------------------------------------------------------------------------------//
 int main()
 {
     srand(time(0));
-    input = fopen("tests.txt", "r");
+    input = fopen("tests.txt", "r");        //Файл, в который записываются тесты из генератора
     output = fopen("result.txt", "w");
     char s[maxn];
     int flag = 0;
     while (fgets(s, maxn, input) != 0)
     {
+        // Первая строка входного файла пропускается
         if (!flag)
         {
             flag = 1;
@@ -97,7 +92,7 @@ int main()
         else
         {
             *s = DeleteSpaceAfterComa(s);
-
+            //-------------Считывание входных данных------------------//
             int Day, Month, Year, NightLowestTemp,
                     NightHighestTemp, DayLowestTemp, DayHighestTemp,
                     LowestFeelsLike, HighestFeelsLike, Pressure;
@@ -109,13 +104,13 @@ int main()
             sscanf(s, "%d.%d.%d%d..%d%d..%d%d..%d%s%s%s%s%d%s", &Day, &Month, &Year, &NightLowestTemp,
                    &NightHighestTemp, &DayLowestTemp, &DayHighestTemp, &LowestFeelsLike, &HighestFeelsLike,
                    Preciptation, WindSpeed, WindDirection, WindGusts, &Pressure, Phenomenon);
-
+            //---------------------------------------------------------//
 //            PrintForecast(Day, Month, Year, NightLowestTemp, NightHighestTemp, DayLowestTemp, DayHighestTemp,
 //                    LowestFeelsLike, HighestFeelsLike, Pressure, Preciptation, WindSpeed, WindDirection,
 //                    WindGusts, Phenomenon);
-            char ans[SIZE] = {0};
-            sprintf(ans, "%s", DateInText(Day, Month, Year));
-            fprintf(output, "%s\n", ans);
+//            char ans[SIZE] = {0};
+//            sprintf(ans, "%s", DateInText(Day, Month, Year));
+//            fprintf(output, "%s\n", ans);
         }
     }
     fclose(input); fclose(output);
