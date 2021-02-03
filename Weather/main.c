@@ -5,7 +5,6 @@
 #include <math.h>
 #include <locale.h>
 #include <windows.h>
-#include <wchar.h>
 
 #define StringSize 100
 #define SIZE 1000
@@ -13,27 +12,32 @@
 #define MediumWind 2
 #define StrongWind 3
 
+//Файлы словаря
 FILE *input, *output, *this_night, *this_day, *night, *day, *in_case_of_rain, *in_case_of_snow, *in_case_of_fog,
         *in_case_of_ice, *in_case_of_hail, *no_prec, *strong_wind, *medium_wind, *windless;
 
 //Функция, сравнивающая текущую дату с данной
 int CheckDate(int Day, int Month, int Year)
 {
+    int DaysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (Year % 400 == 0 && Year % 100 == 0 && Year % 4 == 0) DaysInMonth[2]++;
     struct tm *time_struct; //Структура из библиотеки time.h
     char *date;
     const time_t timer = time(NULL);
     time_struct = localtime(&timer);
     char temp[SIZE] = {0};
-    int length = strftime(temp, SIZE, "%d.%m.%Y", time_struct);
+    strftime(temp, SIZE, "%d.%m.%Y", time_struct);  //Текущая дата
     date = (char *) malloc(sizeof(temp));
     strcpy(date, temp);
     char DateInInput[SIZE] = {0};
-    sprintf(DateInInput, "%d%d.%d%d.%d", (Day - 1) / 10, (Day - 1) % 10, Month / 10, Month % 10, Year);
-    if (!(strcmp(DateInInput, date))) return 1;             //Добавить случай текущего дня и рассмотреть конец месяца
+    if (Day==1) sprintf(DateInInput, "%d.%d%d.%d", DaysInMonth[(Month-1-1)%12], ((Month-1-1)%12)/10, ((Month-1-1)%12)%10, Year);
+    else sprintf(DateInInput, "%d%d.%d%d.%d", (Day - 1) / 10, (Day - 1) % 10, Month / 10, Month % 10,
+            Year); //Вычитаем 1 чтобы проверить, совпадает ли предыдущий день от введенного с текущей датой
+    if (!(strcmp(DateInInput, date))) return 1;
     else return 0;
 }
 
-//Функции вывода предложений/слов из словаря
+//---------------------------------------Вывод предложений/слов из словаря-------------------------------------------//
 char *RandomDayPhrase(char *Phrase)
 {
     int n, idx;
@@ -285,9 +289,10 @@ void RandomPhenomenonPhrase(int key)
         fprintf(output, "%s", temp);
     }
 }
-//--------------------------------------------//
+//-------------------------------------------------------------------------------------------------------------------//
 
-char *DateInText(int Day, int Month, int Year, char *Date)
+//Перевод даты в числовом формате в текстовый вид
+char *DateInText(int Day, int Month, char *Date)
 {
     char *months[12] = {"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
                         "ноября", "декабря"};
@@ -342,6 +347,7 @@ char *DateInText(int Day, int Month, int Year, char *Date)
     return Date;
 }
 
+//Вывод предложений о температуре днем и ночью
 void PrintTemperature(int Day, int Month, int Year, int NightLow, int NightHigh, int DayLow, int DayHigh,
                       int LowestFeelsLike, int HighestFeelsLike)
 {
@@ -376,7 +382,7 @@ void PrintTemperature(int Day, int Month, int Year, int NightLow, int NightHigh,
                 if (cnt == 1)
                 {
                     char Date[SIZE] = {0};
-                    strcpy(Date, DateInText(Day, Month, Year, Date));
+                    strcpy(Date, DateInText(Day, Month, Date));
                     if (i == 0)
                     {
                         Date[0] += 32;
@@ -410,6 +416,7 @@ void PrintTemperature(int Day, int Month, int Year, int NightLow, int NightHigh,
     fprintf(output, " (ощущается как %d..%d). ", LowestFeelsLike, HighestFeelsLike);
 }
 
+//Вывод сведений об осадках
 void PrintPrecipitation(char *Precipitation)
 {
     if (strstr("снег", Precipitation))
@@ -445,6 +452,7 @@ void PrintPrecipitation(char *Precipitation)
     else RandomNoPrecPhrase();
 }
 
+//Вывод информации о погодных явлениях
 void PrintPhenomenon(char *Phenomenon)
 {
     int Key;
@@ -454,6 +462,7 @@ void PrintPhenomenon(char *Phenomenon)
     RandomPhenomenonPhrase(Key);
 }
 
+//Вывод информации об атмосферном давлении
 void PrintPressure(int Pressure)
 {
     char Phrase[3][StringSize] = {"Атмосферное давление", "Атмосферное давление в этот день",
@@ -461,6 +470,7 @@ void PrintPressure(int Pressure)
     fprintf(output, " %s %d мм ртутного столба.", Phrase[rand() % 3], Pressure);
 }
 
+//Вывод сведений о скорости ветра, порывах и направлении
 void PrintWind(char *WindSpeed, char *WindDirection, char *WindGusts)
 {
     fprintf(output, " ");
@@ -480,60 +490,32 @@ void PrintWind(char *WindSpeed, char *WindDirection, char *WindGusts)
             else if (cnt == 2) fprintf(output, "%s", WindGusts);
             else
             {
-                for (int j = 0; j < strlen(WindDirection); j++)
-                {
-                    if (WindDirection[j] == 'Ю' &&
-                        (j == strlen(WindDirection) - 1 || WindDirection[j + 1] == ','))
-                        fprintf(output, "южное");
-                    else if (WindDirection[j] == 'Ю' && j != strlen(WindDirection) - 1 &&
-                             WindDirection[j + 1] == '-')
-                        fprintf(output, "юго");
-                    else if (WindDirection[j] == 'С' &&
-                             (j == strlen(WindDirection) - 1 || WindDirection[j + 1] == ','))
-                        fprintf(output, "северное");
-                    else if (WindDirection[j] == 'С' && j != strlen(WindDirection) - 1 &&
-                             WindDirection[j + 1] == '-')
-                        fprintf(output, "северо");
-                    else if (WindDirection[j] == 'В') fprintf(output, "восточное");
-                    else if (WindDirection[j] == 'З') fprintf(output, "западное");
-                    else if (WindDirection[j] == ',') fprintf(output, ", ");
-                    else fprintf(output, "%c", WindDirection[j]);
-                }
+                if (strcmp(WindDirection, "Ю") == 0) fprintf(output, "южное");
+                else if (strcmp(WindDirection, "В") == 0) fprintf(output, "восточное");
+                else if (strcmp(WindDirection, "С") == 0) fprintf(output, "северное");
+                else if (strcmp(WindDirection, "З") == 0) fprintf(output, "западное");
+                else if (strcmp(WindDirection, "Ю-В") == 0) fprintf(output, "юго-восточное");
+                else if (strcmp(WindDirection, "Ю-З") == 0) fprintf(output, "юго-западное");
+                else if (strcmp(WindDirection, "С-В") == 0) fprintf(output, "северо-восточное");
+                else if (strcmp(WindDirection, "С-З") == 0) fprintf(output, "северо-западное");
             }
         }
         else fprintf(output, "%c", Phrase[i]);
     }
 }
 
-char *DeleteSpaceAfterComa(char *FullString)
-{
-    for (int i = 0; i < strlen(FullString); i++)
-    {
-        if (FullString[i] == ',')
-        {
-            for (int j = i + 2; j < strlen(FullString); j++)
-            {
-                FullString[j - 1] = FullString[j];              //Сдвиг строки на один элемент влево
-            }
-        }
-    }
-    return FullString;
-}
-
 int main()
 {
-    setlocale(LC_CTYPE, "Rus");
-    SetConsoleCP(1251);
+    setlocale(LC_CTYPE, "Rus");                             //Для корректного отображения
+    SetConsoleCP(1251);                                 //Русского языка
     SetConsoleOutputCP(1251);
     srand(time(0));
-    FILE *ThisNight;
     input = fopen("tests.txt", "r");
     output = fopen("result.txt", "w");
     char String[SIZE] = {0};
     fgets(String, SIZE, input);
     while (fgets(String, SIZE, input) != 0)
     {
-        strcpy(String, DeleteSpaceAfterComa(String));
         int Day, Month, Year, NightLowestTemp, NightHighestTemp, DayLowestTemp, DayHighestTemp, LowestFeelsLike,
                 HighestFeelsLike, Pressure;
         char Precipitation[StringSize] = {0}, WindSpeed[StringSize] = {0}, WindDirection[StringSize] = {0},
@@ -541,13 +523,18 @@ int main()
         sscanf(String, "%d.%d.%d %d..%d %d..%d %d..%d %s%s%s%s%d%s", &Day, &Month, &Year, &NightLowestTemp,
                &NightHighestTemp, &DayLowestTemp, &DayHighestTemp, &LowestFeelsLike, &HighestFeelsLike,
                Precipitation, WindSpeed, WindDirection, WindGusts, &Pressure, Phenomenon);
+        fprintf(output, "%d%d.%d%d.%d\n", Day / 10, Day % 10, Month / 10, Month % 10, Year);
         PrintTemperature(Day, Month, Year, NightLowestTemp, NightHighestTemp, DayLowestTemp, DayHighestTemp,
                          LowestFeelsLike, HighestFeelsLike);
-        PrintPrecipitation(Precipitation);
-        PrintPhenomenon(Phenomenon);
-        PrintWind(WindSpeed, WindDirection, WindGusts);
-        PrintPressure(Pressure);
         fprintf(output, "\n");
+        PrintPrecipitation(Precipitation);
+        fprintf(output, "\n");
+        PrintPhenomenon(Phenomenon);
+        fprintf(output, "\n");
+        PrintWind(WindSpeed, WindDirection, WindGusts);
+        fprintf(output, "\n");
+        PrintPressure(Pressure);
+        fprintf(output, "\n\n");
     }
     fclose(input);
     fclose(output);
