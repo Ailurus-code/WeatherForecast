@@ -529,8 +529,8 @@ void PrintPhenomenon(char *Phenomenon)
     else if (strcmp(Phenomenon, "смерч") == 0 || strcmp(Phenomenon, "торнадо") == 0 ||
              strcmp(Phenomenon, "ураган") == 0)
         RandomBadWeatherPhrase(2, Phenomenon);
-    else RandomBadWeatherPhrase(1, Phenomenon);
-    fprintf(output, " ");
+    else  if (strcmp(Phenomenon, "гроза")==0 || strcmp(Phenomenon, "молния")==0) RandomBadWeatherPhrase(1, Phenomenon);
+    fprintf(output, "\n");
 }
 
 //Вывод информации об атмосферном давлении
@@ -599,9 +599,7 @@ int main()
                          LowestFeelsLike, HighestFeelsLike);
         fprintf(output, "\n");
         PrintPrecipitation(Precipitation);
-        fprintf(output, "\n");
         PrintPhenomenon(Phenomenon);
-        fprintf(output, "\n");
         PrintWind(WindSpeed, WindDirection, WindGusts);
         fprintf(output, "\n");
         PrintPressure(Pressure);
@@ -610,3 +608,4 @@ int main()
     fclose(input);
     fclose(output);
     return 0;
+}
