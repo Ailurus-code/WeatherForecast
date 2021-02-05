@@ -13,8 +13,9 @@
 #define StrongWind 3
 
 //Файлы словаря
-FILE *input, *output, *this_night, *this_day, *night, *day, *in_case_of_rain, *in_case_of_snow, *in_case_of_fog,
-        *in_case_of_ice, *in_case_of_hail, *no_prec, *strong_wind, *medium_wind, *windless;
+FILE *input, *output, *this_night, *this_day, *night, *day,
+     *in_case_of_rain, *in_case_of_snow, *in_case_of_fog, *in_case_of_ice, *in_case_of_hail, *no_prec,
+     *strong_wind, *medium_wind, *windless, *in_case_of_thunderstorm, *in_case_of_disasters, *clear_weather;
 
 //Функция, сравнивающая текущую дату с данной
 int CheckDate(int Day, int Month, int Year)
@@ -30,9 +31,12 @@ int CheckDate(int Day, int Month, int Year)
     date = (char *) malloc(sizeof(temp));
     strcpy(date, temp);
     char DateInInput[SIZE] = {0};
-    if (Day==1) sprintf(DateInInput, "%d.%d%d.%d", DaysInMonth[(Month-1-1)%12], ((Month-1-1)%12)/10, ((Month-1-1)%12)%10, Year);
-    else sprintf(DateInInput, "%d%d.%d%d.%d", (Day - 1) / 10, (Day - 1) % 10, Month / 10, Month % 10,
-            Year); //Вычитаем 1 чтобы проверить, совпадает ли предыдущий день от введенного с текущей датой
+    if (Day == 1)
+        sprintf(DateInInput, "%d.%d%d.%d", DaysInMonth[(Month - 1 - 1) % 12], ((Month - 1 - 1) % 12) / 10,
+                ((Month - 1 - 1) % 12) % 10, Year);
+    else
+        sprintf(DateInInput, "%d%d.%d%d.%d", (Day - 1) / 10, (Day - 1) % 10, Month / 10, Month % 10,
+                Year); //Вычитаем 1 чтобы проверить, совпадает ли предыдущий день от введенного с текущей датой
     if (!(strcmp(DateInInput, date))) return 1;
     else return 0;
 }
@@ -256,10 +260,10 @@ char *RandomWindPhrase(int key, char *Phrase)
 
 void RandomPhenomenonPhrase(int key)
 {
+    int n, idx;
+    char temp[SIZE] = {0};
     if (key == 1)
     {
-        int n, idx;
-        char temp[SIZE] = {0};
         in_case_of_ice = fopen("InCaseOfIce.txt", "r");
         fgets(temp, SIZE, in_case_of_ice);
         sscanf(temp, "%d", &n);
@@ -274,8 +278,6 @@ void RandomPhenomenonPhrase(int key)
     }
     else if (key == 2)
     {
-        int n, idx;
-        char temp[SIZE] = {0};
         in_case_of_fog = fopen("InCaseOfFog.txt", "r");
         fgets(temp, SIZE, in_case_of_fog);
         sscanf(temp, "%d", &n);
@@ -289,6 +291,72 @@ void RandomPhenomenonPhrase(int key)
         fprintf(output, "%s", temp);
     }
 }
+
+void RandomBadWeatherPhrase(int key, char *Phenomenon)
+{
+    int n, idx;
+    char temp[SIZE] = {0};
+    if (key == 1)
+    {
+        in_case_of_thunderstorm = fopen("InCaseOfThunderStorm.txt", "r");
+        fgets(temp, SIZE, in_case_of_thunderstorm);
+        sscanf(temp, "%d", &n);
+        idx = rand() % n + 1;
+        for (int i = 0; i < idx; i++)
+        {
+            fgets(temp, SIZE, in_case_of_thunderstorm);
+        }
+        if (temp[strlen(temp) - 1] == '\n') temp[strlen(temp) - 1] = '\0';
+        fclose(in_case_of_thunderstorm);
+        for (int i = 0; i < strlen(temp); i++)
+        {
+            if (temp[i] == '#')
+            {
+                fprintf(output, "%s", Phenomenon);
+            }
+            else fprintf(output, "%c", temp[i]);
+        }
+    }
+    else
+    {
+        in_case_of_disasters = fopen("InCaseOfBadWeather.txt", "r");
+        fgets(temp, SIZE, in_case_of_disasters);
+        sscanf(temp, "%d", &n);
+        idx = rand() % n + 1;
+        for (int i = 0; i < idx; i++)
+        {
+            fgets(temp, SIZE, in_case_of_disasters);
+        }
+        if (temp[strlen(temp) - 1] == '\n') temp[strlen(temp) - 1] = '\0';
+        fclose(in_case_of_disasters);
+        for (int i = 0; i < strlen(temp); i++)
+        {
+            if (temp[i] == '#')
+            {
+                fprintf(output, "%s", Phenomenon);
+            }
+            else fprintf(output, "%c", temp[i]);
+        }
+    }
+}
+
+void RandomClearWeatherPhrase()
+{
+    int n, idx;
+    clear_weather = fopen("InCaseOfClearWeather.txt", "r");
+    char temp[SIZE] = {0};
+    fgets(temp, SIZE, clear_weather);
+    sscanf(temp, "%d", &n);
+    idx = rand() % n + 1;
+    for (int i = 0; i < idx; i++)
+    {
+        fgets(temp, SIZE, clear_weather);
+    }
+    if (temp[strlen(temp) - 1] == '\n') temp[strlen(temp) - 1] = '\0';
+    fclose(clear_weather);
+    fprintf(output, "%s", temp);
+}
+
 //-------------------------------------------------------------------------------------------------------------------//
 
 //Перевод даты в числовом формате в текстовый вид
@@ -455,11 +523,14 @@ void PrintPrecipitation(char *Precipitation)
 //Вывод информации о погодных явлениях
 void PrintPhenomenon(char *Phenomenon)
 {
-    int Key;
-    if (strlen(Phenomenon) > 5) Key = 1;
-    else Key = 2;
+    if (strcmp(Phenomenon, "туман") == 0) RandomPhenomenonPhrase(2);
+    else if (strcmp(Phenomenon, "гололедица") == 0) RandomPhenomenonPhrase(1);
+    else if (strcmp(Phenomenon, "ясно") == 0) RandomClearWeatherPhrase();
+    else if (strcmp(Phenomenon, "смерч") == 0 || strcmp(Phenomenon, "торнадо") == 0 ||
+             strcmp(Phenomenon, "ураган") == 0)
+        RandomBadWeatherPhrase(2, Phenomenon);
+    else RandomBadWeatherPhrase(1, Phenomenon);
     fprintf(output, " ");
-    RandomPhenomenonPhrase(Key);
 }
 
 //Вывод информации об атмосферном давлении
@@ -539,4 +610,3 @@ int main()
     fclose(input);
     fclose(output);
     return 0;
-}
